@@ -1,0 +1,198 @@
+<ng-container [ngSwitch]="message?.sender?.userId === currentUser?.userId">
+  <ng-container *ngSwitchCase="true">
+    <ng-container *ngTemplateOutlet="messageSenderTpl"></ng-container>
+  </ng-container>
+
+  <ng-container *ngSwitchDefault>
+    <ng-container *ngTemplateOutlet="messageReceiveTpl"></ng-container>
+  </ng-container>
+</ng-container>
+
+<ng-template #messageSenderTpl>
+  <nz-list-item-meta class="message w-full text-right">
+    <nz-list-item-meta-description>
+      <div class="text-right">
+        <ng-container *ngIf="!message?.deletedAt">
+          <div class="w-1/2 inline-block">
+            <div class="bg-gray-200 mr-2 pl-2 pb-1.5 rounded action">
+              <nz-space>
+                <nz-space-item *ngIf="message?.parentId === -1" class="cursor-pointer">
+                  <nz-badge [nzCount]="message?.totalChildMessage">
+                    <i nz-icon nzType="rollback" nzTheme="outline"
+                       nz-tooltip nzTooltipTitle="Trả lời" nzTooltipMouseEnterDelay="1"
+                       class="text-xl"
+                       (click)="onReplyMessage()"></i>
+                  </nz-badge>
+                </nz-space-item>
+
+                <ng-container *ngIf="message?.messageType === messageType.IMAGE_MESSAGE">
+                  <nz-space-item class="cursor-pointer">
+                    <a [href]="message.message" target="_blank">
+                      <i nz-icon nzType="download"
+                         nzTheme="outline" class="text-xl text-blue-500"
+                         nz-tooltip nzTooltipTitle="Tải xuống" nzTooltipMouseEnterDelay="1"></i>
+                    </a>
+                  </nz-space-item>
+                </ng-container>
+
+                <ng-container *ngIf="message?.messageType === messageType.FILE_MESSAGE">
+                  <nz-space-item class="cursor-pointer">
+                    <i nz-icon [nzType]="(loading | async) ? 'loading' : 'download'"
+                       nzTheme="outline" class="text-xl text-blue-500"
+                       nz-tooltip nzTooltipTitle="Tải xuống" nzTooltipMouseEnterDelay="1"
+                       (click)="onDownloadFile()"></i>
+                  </nz-space-item>
+                </ng-container>
+
+                <nz-space-item class="cursor-pointer">
+                  <i nz-icon nzType="delete" nzTheme="outline" class="text-xl text-red-500"
+                     nz-tooltip nzTooltipTitle="Xoá tin nhắn" nzTooltipMouseEnterDelay="1"
+                     (click)="onDeleteMessage()"></i>
+                </nz-space-item>
+              </nz-space>
+            </div>
+          </div>
+        </ng-container>
+
+        <div class="inline-block w-auto max-w-1/2 bg-blue-200 rounded-md text-left">
+          <ng-container *ngIf="!message?.deletedAt">
+            <div [ngClass]="{'py-2.5 px-3': message?.messageType !== messageType.IMAGE_MESSAGE,
+                         'px-0 pt-0 pb-2.5': message?.messageType === messageType.IMAGE_MESSAGE}">
+              <div class="block text-black">
+                <ng-container [ngSwitch]="message.messageType">
+                  <ng-container *ngSwitchDefault>
+                    <app-message-text [message]="message?.message"
+                                      [singleLine]="isViewInChildMessage"></app-message-text>
+                  </ng-container>
+
+                  <ng-container *ngSwitchCase="messageType.IMAGE_MESSAGE">
+                    <app-message-image [message]="message"
+                                       [currentGroup]="currentGroup"
+                                       [isPreviewParentMessage]="isViewInChildMessage">
+                    </app-message-image>
+                  </ng-container>
+
+                  <ng-container *ngSwitchCase="messageType.FILE_MESSAGE">
+                    <app-message-file [message]="message"></app-message-file>
+                  </ng-container>
+                </ng-container>
+              </div>
+
+              <small class="block text-gray-400 text-right"
+                     nz-tooltip
+                     [nzTooltipTitle]="message?.createdAt | datetimeFormat: 'shortTime'"
+                     nzTooltipMouseEnterDelay="2"
+                     [ngClass]="{'px-3 pt-1': message?.messageType === messageType.IMAGE_MESSAGE}">
+                {{message?.createdAt | datetimeFormat:'relativeTime'}}
+              </small>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="message?.deletedAt">
+            <div class="text-gray-400 py-2.5 px-3">
+              Tin nhắn đã bị thu hồi
+            </div>
+          </ng-container>
+        </div>
+
+      </div>
+    </nz-list-item-meta-description>
+  </nz-list-item-meta>
+</ng-template>
+
+<ng-template #messageReceiveTpl>
+  <nz-list-item-meta class="message w-full text-left">
+    <nz-list-item-meta-avatar>
+      <nz-avatar [nzSrc]="message?.sender?.avatar"
+                 [nzSize]="40"
+                 [nzText]="message?.sender | userInfo:'firstCharName'"
+                 [ngStyle]="{'background-color': message?.sender | userInfo:'color'}">
+      </nz-avatar>
+    </nz-list-item-meta-avatar>
+
+    <nz-list-item-meta-description>
+      <div class="text-left">
+        <ng-container *ngIf="!message?.deletedAt">
+          <div class="inline-block w-auto bg-gray-200 py-2.5 px-3 rounded-md"
+               [ngClass]="{'max-w-1/2': !isViewInChildMessage,
+                         'w-full': isViewInChildMessage,
+                         'py-2.5 px-3': message?.messageType !== messageType.IMAGE_MESSAGE || ((message?.messageType === messageType.IMAGE_MESSAGE) && isViewInChildMessage),
+                         'px-0 pt-0 pb-2.5': (message?.messageType === messageType.IMAGE_MESSAGE) && !isViewInChildMessage}">
+
+            <ng-container [ngSwitch]="message.messageType">
+              <div class="block text-black">
+                <ng-container *ngSwitchDefault>
+                  <app-message-text [message]="message?.message"
+                                    [singleLine]="isViewInChildMessage">
+                  </app-message-text>
+                </ng-container>
+
+                <ng-container *ngSwitchCase="messageType.IMAGE_MESSAGE">
+                  <app-message-image [message]="message"
+                                     [currentGroup]="currentGroup"
+                                     [isPreviewParentMessage]="isViewInChildMessage">
+                  </app-message-image>
+                </ng-container>
+
+                <ng-container *ngSwitchCase="messageType.FILE_MESSAGE">
+                  <app-message-file [message]="message"></app-message-file>
+                </ng-container>
+              </div>
+            </ng-container>
+
+            <small class="block text-gray-400"
+                   nz-tooltip
+                   [nzTooltipTitle]="message?.createdAt | datetimeFormat: 'shortTime'"
+                   nzTooltipMouseEnterDelay="2"
+                   [ngClass]="{'px-3 pt-1': (message?.messageType === messageType.IMAGE_MESSAGE) && !isViewInChildMessage}">
+              {{message?.createdAt | datetimeFormat:'relativeTime'}}
+            </small>
+          </div>
+
+          <div *ngIf="!isViewInChildMessage"
+               class="bg-gray-200 ml-2 pl-2 pb-1.5 rounded action">
+            <nz-space>
+              <nz-space-item *ngIf="message?.parentId === -1" class="cursor-pointer">
+                <nz-badge [nzCount]="message?.totalChildMessage">
+                  <i nz-icon nzType="rollback" nzTheme="outline"
+                     nz-tooltip nzTooltipTitle="Trả lời" nzTooltipMouseEnterDelay="1"
+                     class="text-xl"
+                     (click)="onReplyMessage()"></i>
+                </nz-badge>
+              </nz-space-item>
+
+              <ng-container *ngIf="message?.messageType === messageType.IMAGE_MESSAGE">
+                <nz-space-item class="cursor-pointer">
+                  <a [href]="message.message" target="_blank">
+                    <i nz-icon nzType="download"
+                       nzTheme="outline" class="text-xl text-blue-500"
+                       nz-tooltip nzTooltipTitle="Tải xuống" nzTooltipMouseEnterDelay="1"></i>
+                  </a>
+                </nz-space-item>
+              </ng-container>
+
+              <ng-container *ngIf="message?.messageType === messageType.FILE_MESSAGE">
+                <nz-space-item class="cursor-pointer">
+                  <i nz-icon [nzType]="(loading | async) ? 'loading' : 'download'"
+                     nzTheme="outline" class="text-xl text-blue-500"
+                     nz-tooltip nzTooltipTitle="Tải xuống" nzTooltipMouseEnterDelay="1"
+                     (click)="onDownloadFile()"></i>
+                </nz-space-item>
+              </ng-container>
+            </nz-space>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="message?.deletedAt">
+          <div class="inline-block w-auto bg-gray-200 py-2.5 px-3 rounded-md block text-gray-400">
+            Tin nhắn đã bị thu hồi
+          </div>
+        </ng-container>
+      </div>
+    </nz-list-item-meta-description>
+
+    <nz-list-item-meta-title>
+      <p class="font-medium text-xs">{{message?.sender | userInfo: 'fullname'}}</p>
+    </nz-list-item-meta-title>
+  </nz-list-item-meta>
+</ng-template>

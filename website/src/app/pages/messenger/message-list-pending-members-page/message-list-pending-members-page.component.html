@@ -1,0 +1,67 @@
+<ng-container *ngIf="currentGroup">
+  <div class="flex items-center">
+    <p class="inline-block text-2xl font-bold pr-2">Danh sách người dùng chờ duyệt</p>
+
+    <a class="text-black"
+       nz-tooltip nzTooltipTitle="Làm mới" nzTooltipMouseEnterDelay="2"
+       (click)="onRefresh()">
+      <i nz-icon nzType="reload" nzTheme="outline"></i>
+    </a>
+  </div>
+
+  <nz-list nzItemLayout="horizontal"
+           [nzLoading]="loading | async">
+    <nz-list-item *ngFor="let request of listMemberPending">
+      <nz-list-item-meta *ngIf="request"
+                         class="flex items-center">
+        <nz-list-item-meta-title>
+          <p class="text-md font-medium">{{request?.userInvited | userInfo:'fullname'}}</p>
+        </nz-list-item-meta-title>
+
+        <nz-list-item-meta-description>
+          <p class="text-xs italic">{{request?.userInvited | userInfo: 'username'}}</p>
+
+          <ng-container *ngIf="request?.userInvite">
+            <p class="text-xs"
+               *ngIf="request?.userInvite?.userId === request?.userInvited?.userId">
+              Người dùng tham gia bằng mã QR
+            </p>
+
+            <p class="text-xs"
+               *ngIf="request?.userInvite?.userId !== request?.userInvited?.userId">
+              Được thêm bởi bác sĩ <span class="font-bold">{{request?.userInvite?.fullName}}</span>
+            </p>
+          </ng-container>
+        </nz-list-item-meta-description>
+
+        <nz-list-item-meta-avatar>
+          <nz-avatar [nzSrc]="request?.userInvited?.avatar"
+                     [nzSize]="40"
+                     [nzText]="request?.userInvited | userInfo:'firstCharName'"
+                     [ngStyle]="{'background-color': request?.userInvited | userInfo:'color'}">
+          </nz-avatar>
+        </nz-list-item-meta-avatar>
+      </nz-list-item-meta>
+
+      <ul nz-list-item-actions>
+        <nz-list-item-action>
+          <a nz-typography nzType="danger"
+             nz-tooltip nzTooltipTitle="Từ chối"
+             (click)="onReject(request)">
+            <i nz-icon nzType="close-circle" nzTheme="outline" class="text-xl"></i>
+          </a>
+        </nz-list-item-action>
+
+        <nz-list-item-action>
+          <a nz-typography
+             nz-tooltip nzTooltipTitle="Đồng ý"
+             (click)="onApprove(request)">
+            <i nz-icon nzType="check-circle" nzTheme="outline" class="text-xl"></i>
+          </a>
+        </nz-list-item-action>
+      </ul>
+    </nz-list-item>
+
+    <nz-list-empty *ngIf="listMemberPending.length === 0"></nz-list-empty>
+  </nz-list>
+</ng-container>

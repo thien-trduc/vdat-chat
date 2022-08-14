@@ -1,0 +1,37 @@
+<ng-container *ngIf="currentGroup && currentUser && parentMessage">
+  <ng-container *ngIf="!!currentGroup">
+    <nz-layout class="h-full bg-white">
+      <nz-content class="bg-white p-2 pb-0">
+        <ng-container *ngTemplateOutlet="contentTpl"></ng-container>
+      </nz-content>
+
+      <nz-footer class="px-1 py-2 pr-2 bg-white">
+        <app-message-input [currentGroup]="currentGroup"
+                           [currentUser]="currentUser"
+                           [parentMessage]="parentMessage">
+        </app-message-input>
+      </nz-footer>
+    </nz-layout>
+
+    <ng-template #contentTpl>
+      <cdk-virtual-scroll-viewport #virtualScrollViewport
+                                   orientation="vertical"
+                                   itemSize="10"
+                                   class="h-full w-full overflow-y-auto overflow-x-hidden px-3">
+        <nz-list [nzBordered]="false" [nzSplit]="false">
+          <nz-list-item *cdkVirtualFor="let message of messageDataSource"
+                        [nzNoFlex]="true" class="py-1 pr-2">
+            <nz-skeleton *ngIf="!message && !currentUser"
+                         [nzAvatar]="true"
+                         [nzParagraph]="{ rows: 1 }">
+            </nz-skeleton>
+
+            <app-message [currentUser]="currentUser"
+                         [message]="message">
+            </app-message>
+          </nz-list-item>
+        </nz-list>
+      </cdk-virtual-scroll-viewport>
+    </ng-template>
+  </ng-container>
+</ng-container>

@@ -1,0 +1,98 @@
+<ng-container *ngIf="!!currentGroup">
+  <nz-layout class="h-full bg-white">
+    <nz-header class="bg-white border-b px-4">
+      <ng-container *ngTemplateOutlet="groupHeaderTpl"></ng-container>
+    </nz-header>
+
+    <nz-content class="bg-white p-2 pb-0">
+      <ng-container *ngTemplateOutlet="contentTpl"></ng-container>
+    </nz-content>
+
+    <nz-footer class="px-1 py-2 pr-2 bg-white">
+      <app-message-input [currentGroup]="currentGroup"
+                         [currentUser]="currentUser">
+      </app-message-input>
+    </nz-footer>
+  </nz-layout>
+
+  <ng-template #groupHeaderTpl>
+    <nz-row class="flex items-center">
+      <nz-col nzSpan="12">
+        <nz-avatar [nzSrc]="currentGroup?.thumbnail"
+                   [nzSize]="38"
+                   [nzText]="currentGroup?.nameGroup?.charAt(0).toUpperCase()"
+                   [ngStyle]="{'background-color': currentGroup?.color}">
+        </nz-avatar>
+
+        <span class="font-bold pl-2 text-md">{{ currentGroup?.nameGroup }}</span>
+      </nz-col>
+
+      <nz-col nzSpan="12" class="text-right">
+        <nz-space>
+          <!--          <nz-space-item>-->
+          <!--            <button nz-button nzType="link"-->
+          <!--                    nz-tooltip nzTooltipTitle="Gọi điện thoại">-->
+          <!--              <i nz-icon nzType="phone" nzTheme="outline"></i>-->
+          <!--            </button>-->
+          <!--          </nz-space-item>-->
+
+          <!--          <nz-space-item>-->
+          <!--            <button nz-button nzType="link"-->
+          <!--                    nz-tooltip nzTooltipTitle="Gọi video">-->
+          <!--              <i nz-icon nzType="video-camera" nzTheme="outline"></i>-->
+          <!--            </button>-->
+          <!--          </nz-space-item>-->
+
+          <nz-space-item>
+            <button nz-button nzType="link"
+                    nz-tooltip nzTooltipTitle="Thông tin"
+                    (click)="onCollapseInfoTab()">
+              <i nz-icon nzType="info-circle" nzTheme="outline"></i>
+            </button>
+          </nz-space-item>
+        </nz-space>
+      </nz-col>
+    </nz-row>
+  </ng-template>
+
+  <ng-template #contentTpl>
+    <cdk-virtual-scroll-viewport #virtualScrollViewport
+                                 orientation="vertical"
+                                 [itemSize]="messageDataSource.MAX_ITEM_PER_PAGE"
+                                 class="h-full w-full overflow-y-auto overflow-x-hidden px-3">
+      <nz-list [nzBordered]="false" [nzSplit]="false">
+        <nz-list-item *cdkVirtualFor="let message of messageDataSource"
+                      [nzNoFlex]="true" class="py-1 pr-2">
+          <nz-skeleton *ngIf="!message && !currentUser"
+                       [nzAvatar]="true"
+                       [nzParagraph]="{ rows: 1 }">
+          </nz-skeleton>
+
+          <app-message [currentUser]="currentUser"
+                       [message]="message"
+                       (replyMessageEvent)="onOpenReplyMessageDrawer(message)">
+          </app-message>
+        </nz-list-item>
+      </nz-list>
+    </cdk-virtual-scroll-viewport>
+  </ng-template>
+</ng-container>
+
+<ng-container *ngIf="currentMessage">
+  <nz-drawer [nzVisible]="visibleReplyMessageDrawer | async"
+             nzPlacement="right"
+             [nzTitle]="titleDrawerReplyMessageTpl"
+             nzWidth="40vw"
+             (nzOnClose)="onCloseReplyMessageDrawer()">
+    <ng-container *nzDrawerContent>
+      <app-message-reply-content-page [currentGroup]="currentGroup"
+                                      [currentUser]="currentUser"
+                                      [parentMessage]="currentMessage">
+      </app-message-reply-content-page>
+    </ng-container>
+  </nz-drawer>
+
+  <ng-template #titleDrawerReplyMessageTpl>
+    <app-message [message]="currentMessage" [isViewInChildMessage]="true"></app-message>
+  </ng-template>
+</ng-container>

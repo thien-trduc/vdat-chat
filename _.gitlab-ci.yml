@@ -1,0 +1,57 @@
+stages:
+  - build
+  - build-image
+  - deploy
+
+build:
+  image: alpine
+  stage: build
+  before_script:
+    - apk add go
+  script:
+    - go install
+    - go build -o ./chat-service
+  cache:
+    paths:
+      - $GOPATH
+  artifacts:
+    paths:
+      - ./chat-service
+
+build-prod:
+  image: docker:latest
+  stage: build-image
+  services:
+    - docker:dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" "$CI_REGISTRY" --password-stdin
+  script:
+    - docker build --pull -t "$CI_REGISTRY_IMAGE" .
+    - docker push "$CI_REGISTRY_IMAGE"
+  after_script:
+    - docker logout "$CI_REGISTRY"
+  only:
+    - master
+
+build-dev:
+  image: docker:latest
+  stage: build-image
+  services:
+    - docker:dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" "$CI_REGISTRY" --password-stdin
+  script:
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+  after_script:
+    - docker logout "$CI_REGISTRY"
+  except:
+    - master
+
+deploy:
+  stage: deploy
+  when: on_success
+  script:
+    - echo "Done"
+  only:
+    - master

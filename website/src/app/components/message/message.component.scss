@@ -1,0 +1,11 @@
+.message {
+  &:hover {
+    .action {
+      display: inline-block;
+    }
+  }
+}
+
+.action {
+  display: none;
+}

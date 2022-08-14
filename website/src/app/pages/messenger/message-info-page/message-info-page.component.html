@@ -1,0 +1,394 @@
+<ng-container *ngIf="!!currentGroup">
+  <div class="h-full overflow-y-auto">
+    <nz-row class="pt-10">
+      <nz-col nzSpan="24" class="text-center">
+        <nz-badge [nzCount]="currentGroup?.isGroup && (currentGroup | groupRole:'owner') ? editGroupActionTpl : null">
+          <nz-avatar [nzSrc]="currentGroup?.thumbnail"
+                     [nzSize]="128"
+                     [nzText]="currentGroup?.nameGroup?.charAt(0).toUpperCase()"
+                     [ngStyle]="{'background-color': currentGroup?.color}">
+          </nz-avatar>
+        </nz-badge>
+
+        <a [routerLink]="['/messages', currentGroup?.id]"
+           class="block text-xl font-medium pt-3 no-underline hover:underline hover:text-black">
+          {{currentGroup?.nameGroup}}
+        </a>
+
+        <ng-container *ngIf="!!currentGroup && currentGroup.isGroup && !!currentGroup.description">
+          <p>{{currentGroup?.description}}</p>
+        </ng-container>
+
+        <ng-template #editGroupActionTpl>
+          <i nz-icon nzType="edit" nzTheme="outline"
+             class="ant-scroll-number-custom-component cursor-pointer"
+             nz-tooltip nzTooltipTitle="Cập nhật" nzTooltipTrigger="hover"
+             (click)="onOpenModalEditGroup()">
+          </i>
+        </ng-template>
+      </nz-col>
+
+      <nz-col nzSpan="24" class="mt-10">
+        <ng-container *ngIf="currentGroup?.isMember">
+          <nz-collapse nzExpandIconPosition="right" class="border-l-0 border-r-0">
+            <nz-collapse-panel [nzActive]="collapseMembers | async"
+                               (nzActiveChange)="collapseMembers.next($event)"
+                               [nzHeader]="membersHeaderTpl"
+                               class="bg-white"
+                               *ngIf="currentGroup?.isGroup">
+              <ng-template #membersHeaderTpl>
+                <div class="flex items-center">
+                  <i nz-icon nzType="team" nzTheme="outline"></i>
+                  <span class="pl-2">Thành viên ({{currentGroup?.members?.length | nzSafeNull:'0'}})</span>
+                </div>
+              </ng-template>
+
+              <ng-container *ngTemplateOutlet="membersCollapseTpl"></ng-container>
+            </nz-collapse-panel>
+
+            <nz-collapse-panel [nzActive]="collapseImages | async"
+                               (nzActiveChange)="collapseImages.next($event)"
+                               [nzHeader]="imagesHeaderTpl"
+                               class="bg-white">
+              <ng-template #imagesHeaderTpl>
+                <div class="flex items-center">
+                  <i nz-icon nzType="picture" nzTheme="outline"></i>
+                  <span class="pl-2">Hình ảnh</span>
+                </div>
+              </ng-template>
+
+              <ng-container *ngTemplateOutlet="imagesCollapseTpl"></ng-container>
+            </nz-collapse-panel>
+
+            <nz-collapse-panel [nzActive]="collapseFiles | async"
+                               (nzActiveChange)="collapseFiles.next($event)"
+                               [nzHeader]="filesHeaderTpl"
+                               class="bg-white">
+              <ng-template #filesHeaderTpl>
+                <div class="flex items-center">
+                  <i nz-icon nzType="file" nzTheme="outline"></i>
+                  <span class="pl-2">Tệp đã chia sẻ</span>
+                </div>
+              </ng-template>
+
+              <ng-container *ngTemplateOutlet="filesCollapseTpl"></ng-container>
+            </nz-collapse-panel>
+
+            <nz-collapse-panel [nzActive]="collapseOptions | async"
+                               (nzActiveChange)="collapseOptions.next($event)"
+                               [nzHeader]="optionsHeaderTpl"
+                               class="bg-white">
+              <ng-template #optionsHeaderTpl>
+                <div class="flex items-center">
+                  <i nz-icon nzType="setting" nzTheme="outline"></i>
+                  <span class="pl-2">Tuỳ chọn</span>
+                </div>
+              </ng-template>
+
+              <ng-container *ngTemplateOutlet="optionsCollapseTpl"></ng-container>
+            </nz-collapse-panel>
+          </nz-collapse>
+        </ng-container>
+      </nz-col>
+    </nz-row>
+  </div>
+
+  <ng-template #membersCollapseTpl>
+    <ng-container *ngIf="(currentGroup | groupRole:'owner') && currentGroup?.isPrivate">
+      <nz-row>
+        <nz-col nzSpan="12" class="text-left">
+          <button nz-button nzType="link" (click)="onClickOpenModalAddMember()">Thêm thành viên</button>
+        </nz-col>
+
+        <nz-col nzSpan="12" class="text-right">
+          <button nz-button nzType="link" (click)="visibleModalViewPendingMembers.next(true)">Danh sách chờ</button>
+        </nz-col>
+      </nz-row>
+    </ng-container>
+
+    <ng-container *ngIf="(currentUser | userInfo: 'is-doctor') && !(currentGroup | groupRole:'owner')">
+      <div class="text-center">
+        <button nz-button nzType="link" (click)="onClickOpenModalAddMember()">Thêm thành viên</button>
+      </div>
+    </ng-container>
+
+    <div *ngIf="!!currentGroup?.members" class="max-h-96 overflow-x-hidden overflow-y-auto">
+      <nz-list nzItemLayout="horizontal" [nzSplit]="false"
+               [nzLoading]="loading | async"
+               class="h-full overflow-y-auto overflow-x-hidden">
+        <nz-list-item *ngFor="let member of currentGroup?.members?.slice(0, 4)">
+          <nz-list-item-meta>
+            <nz-list-item-meta-avatar>
+              <ng-container *ngIf="currentGroup | groupRole:'owner': member">
+                <nz-badge [nzCount]="iconOwnerTemplate">
+                  <ng-container *ngTemplateOutlet="userAvatar"></ng-container>
+                </nz-badge>
+              </ng-container>
+
+              <ng-container
+                *ngIf="(currentGroup | groupRole:'member': member) && !(currentGroup | groupRole:'owner': member)">
+                <ng-container *ngIf="member | userInfo: 'is-doctor'">
+                  <nz-badge [nzCount]="iconDoctorTemplate">
+                    <ng-container *ngTemplateOutlet="userAvatar"></ng-container>
+                  </nz-badge>
+                </ng-container>
+
+                <ng-container *ngIf="!(member | userInfo: 'is-doctor')">
+                  <ng-container *ngTemplateOutlet="userAvatar"></ng-container>
+                </ng-container>
+              </ng-container>
+
+              <ng-template #userAvatar>
+                <nz-avatar [nzSrc]="member?.avatar"
+                           [nzSize]="38"
+                           [nzText]="member?.lastName?.charAt(0)?.toUpperCase()"
+                           [ngStyle]="{'background-color': member?.color}">
+                </nz-avatar>
+              </ng-template>
+
+              <ng-template #iconOwnerTemplate>
+                <i nz-icon nzType="crown" nzTheme="outline"
+                   class="ant-scroll-number-custom-component text-yellow-600"
+                   nz-tooltip nzTooltipTitle="Trưởng nhóm">
+                </i>
+              </ng-template>
+
+              <ng-template #iconDoctorTemplate>
+                <i nz-icon nzType="heart" nzTheme="outline"
+                   class="ant-scroll-number-custom-component text-green-600"
+                   nz-tooltip nzTooltipTitle="Bác sĩ">
+                </i>
+              </ng-template>
+            </nz-list-item-meta-avatar>
+
+            <nz-list-item-meta-title>
+              <span class="text-md font-medium">{{ member?.fullName }}</span>
+            </nz-list-item-meta-title>
+
+            <nz-list-item-meta-description>
+              <span class="text-xs italic">@{{member?.username}}</span>
+            </nz-list-item-meta-description>
+          </nz-list-item-meta>
+
+          <ul nz-list-item-actions
+              *ngIf="currentUser?.userId !== member?.userId">
+            <nz-list-item-action>
+              <a href="javascript:void(0)"
+                 nz-dropdown nzTrigger="click"
+                 [nzDropdownMenu]="memberActionMenu">
+                <i nz-icon nzType="more" nzTheme="outline" class="font-bold text-xl"></i>
+              </a>
+
+              <nz-dropdown-menu #memberActionMenu="nzDropdownMenu">
+                <ul nz-menu>
+                  <li nz-menu-item class="flex items-center"
+                      *ngIf="member?.userId !== currentUser?.userId"
+                      (click)="onCreateMessenger(member?.userId)">
+                    <i nz-icon nzType="message" nzTheme="outline"></i>
+                    <span>Nhắn tin</span>
+                  </li>
+                  <li nz-menu-divider
+                      *ngIf="member?.userId !== currentUser?.userId && (currentGroup | groupRole:'owner')"></li>
+                  <li nz-menu-item nz-typography nzDanger
+                      *ngIf="currentGroup | groupRole:'owner'"
+                      class="flex items-center"
+                      (click)="onClickDeleteMember(member)">
+                    <i nz-icon nzType="delete" nzTheme="outline"></i>
+                    <span>Xoá thành viên</span>
+                  </li>
+                </ul>
+              </nz-dropdown-menu>
+            </nz-list-item-action>
+          </ul>
+        </nz-list-item>
+
+        <nz-list-empty *ngIf="currentGroup?.members?.length === 0"></nz-list-empty>
+      </nz-list>
+    </div>
+
+    <div class="w-full text-center"
+         (click)="visibleModalViewAllMember.next(true)">
+      <button nz-button nzType="default">Xem thêm</button>
+    </div>
+  </ng-template>
+
+  <ng-template #imagesCollapseTpl>
+    <ng-container *ngIf="!!currentGroup">
+      <ng-container *ngIf="currentGroup?.images?.length > 0">
+        <div class="w-full">
+          <div>
+            <nz-image-group>
+              <img nz-image
+                   *ngFor="let image of currentGroup?.images"
+                   alt="hình ảnh"
+                   [nzSrc]="image?.fileUrl"
+                   class="inline-block w-1/3 px-1"/>
+            </nz-image-group>
+          </div>
+
+          <div class="text-center mt-2">
+            <button nz-button nzType="link" (click)="onOpenImageList()">Xem tất cả</button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="currentGroup?.images?.length <= 0">
+        <div class="text-center">
+          <i nz-icon nzType="picture" nzTheme="outline" class="text-3xl mb-2 text-gray-300"></i>
+          <p class="italic">Chưa có hình ảnh nào được chia sẻ</p>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-template>
+
+  <ng-template #filesCollapseTpl>
+    <ng-container *ngIf="!!currentGroup">
+      <ng-container *ngIf="currentGroup?.files?.length > 0">
+        <div class="w-full text-center">
+          <nz-list nzItemLayout="vertical" [nzSplit]="false"
+                   [nzLoading]="loading | async"
+                   class="h-full overflow-y-auto overflow-x-hidden">
+            <nz-list-item *ngFor="let file of currentGroup?.files">
+              <div class="flex items-center">
+                <i nz-icon [nzType]="(file?.nameFile | fileInfo: 'iconFile') | async | nzSafeNull:'file'"
+                   nzTheme="outline" class="text-3xl"></i>
+                <p class="inline-block truncate px-1.5"
+                   nz-tooltip [nzTooltipTitle]="file?.nameFile | fileInfo: 'fileName'"
+                   nzTooltipPlacement="top" nzTooltipMouseEnterDelay="1">
+                  {{file?.nameFile | fileInfo: 'fileName'}}
+                </p>
+              </div>
+            </nz-list-item>
+
+            <nz-list-empty *ngIf="currentGroup?.files?.length === 0"></nz-list-empty>
+          </nz-list>
+
+          <button nz-button nzType="link" (click)="onOpenFileList()">Xem tất cả</button>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="currentGroup?.files?.length === 0">
+        <div class="text-center">
+          <i nz-icon nzType="file" nzTheme="outline" class="text-3xl mb-2 text-gray-300"></i>
+          <p class="italic">Chưa có tệp nào được chia sẻ</p>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-template>
+
+  <ng-template #optionsCollapseTpl>
+    <ng-container *ngIf="(currentUser | userInfo: 'is-doctor')">
+      <button nz-button nzType="link"
+              class="px-0 block"
+              (click)="visibleModalCreateQRCode.next(true)">
+        Tạo mã QR
+      </button>
+    </ng-container>
+
+    <button nz-button nzType="link" nzDanger
+            *ngIf="(currentGroup | groupRole:'member') && !(currentGroup | groupRole:'owner')"
+            class="px-0 block"
+            (click)="onDeleteGroup()">
+      Rời cuộc hội thoại
+    </button>
+
+    <button nz-button nzType="link" nzDanger
+            *ngIf="currentGroup | groupRole:'owner'"
+            class="px-0 block"
+            (click)="onDeleteGroup()">
+      Xoá cuộc hội thoại
+    </button>
+  </ng-template>
+
+  <nz-modal [nzVisible]="visibleModalAddMember | async"
+            nzTitle="Thêm thành viên mới {{(currentGroup?.isPrivate && currentGroup | groupRole:'owner') ? '' : '(chờ duyệt)'}}"
+            nzCentered [nzClosable]="false"
+            nzOkText="Thêm thành viên"
+            nzCancelText="Huỷ"
+            (nzOnCancel)="onClickCloseModalAddMember()"
+            (nzOnOk)="onAddMembers()">
+    <ng-container *nzModalContent>
+      <app-search-users #searchUsersComponent
+                        [ignoreUsers]="listMemberOld">
+      </app-search-users>
+    </ng-container>
+  </nz-modal>
+
+  <nz-modal [nzVisible]="visibleModalViewAllMember | async"
+            [nzClosable]="false"
+            nzCentered
+            (nzOnCancel)="visibleModalViewAllMember.next(false)">
+    <ng-container *nzModalContent>
+      <app-message-list-member-page [currentGroup]="currentGroup"
+                                    [currentUser]="currentUser"
+                                    (deleteUserEvent)="onDeleteUserFromListFull($event)"
+                                    (createMessageEvent)="onCreateMessenger($event)">
+      </app-message-list-member-page>
+    </ng-container>
+
+    <ng-container *nzModalFooter>
+      <button nz-button nzType="primary" (click)="visibleModalViewAllMember.next(false)">Đóng</button>
+    </ng-container>
+  </nz-modal>
+
+  <nz-modal [nzVisible]="visibleModalEdit | async"
+            [nzMaskClosable]="false"
+            [nzClosable]="false"
+            nzCentered
+            nzOkText="Lưu"
+            nzCancelText="Huỷ"
+            (nzOnOk)="updateGroup()"
+            (nzOnCancel)="visibleModalEdit.next(false)">
+    <ng-container *nzModalContent>
+      <app-message-edit-info-page #messageEditInfoPageComponent
+                                  [currentGroup]="currentGroup">
+      </app-message-edit-info-page>
+    </ng-container>
+  </nz-modal>
+
+  <nz-modal [nzVisible]="visibleModalCreateQRCode | async"
+            [nzMaskClosable]="false"
+            [nzClosable]="false"
+            nzCentered>
+    <ng-container *nzModalContent>
+      <app-message-qr-code-page [currentGroup]="currentGroup"
+                                [currentUser]="currentUser">
+      </app-message-qr-code-page>
+    </ng-container>
+
+    <ng-container *nzModalFooter>
+      <button nz-button nzType="primary" (click)="visibleModalCreateQRCode.next(false)">Đóng</button>
+    </ng-container>
+  </nz-modal>
+
+  <nz-modal [nzVisible]="visibleModalViewPendingMembers | async"
+            [nzMaskClosable]="false"
+            [nzClosable]="false"
+            nzCentered>
+    <ng-container *nzModalContent>
+      <app-message-list-pending-members-page [currentGroup]="currentGroup"></app-message-list-pending-members-page>
+    </ng-container>
+
+    <ng-container *nzModalFooter>
+      <button nz-button nzType="primary" (click)="visibleModalViewPendingMembers.next(false)">Đóng</button>
+    </ng-container>
+  </nz-modal>
+
+  <nz-drawer [nzVisible]="visibleDrawerFileList | async"
+             (nzVisibleChange)="visibleDrawerFileList.next($event)"
+             [nzClosable]="true"
+             (nzOnClose)="visibleDrawerFileList.next(false)"
+             nzPlacement="right"
+             nzWidth="30vw"
+             [nzTitle]="isListFileDrawer ? 'Danh sách tệp' : 'Hình ảnh'">
+    <ng-container *nzDrawerContent>
+      <ng-container *ngIf="isListFileDrawer">
+        <app-message-files-shared-page [currentGroup]="currentGroup"></app-message-files-shared-page>
+      </ng-container>
+
+      <ng-container *ngIf="!isListFileDrawer">
+        <app-message-images-shared-page [currentGroup]="currentGroup"></app-message-images-shared-page>
+      </ng-container>
+    </ng-container>
+  </nz-drawer>
+</ng-container>

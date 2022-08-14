@@ -1,0 +1,111 @@
+<nz-row class="h-auto">
+  <nz-col nzSpan="24" class="mb-3">
+    <nz-row class="align-middle">
+      <nz-col nzSpan="12" class="flex items-center">
+        <p class="inline-block text-2xl font-bold pr-2">Tin nhắn</p>
+
+        <a class="text-black"
+           nz-tooltip nzTooltipTitle="Làm mới" nzTooltipMouseEnterDelay="2"
+           (click)="onRefreshListGroup()">
+          <i nz-icon nzType="reload" nzTheme="outline"></i>
+        </a>
+      </nz-col>
+
+      <nz-col nzSpan="12" class="text-right">
+        <button nz-button nzType="link"
+                class="text-black"
+                nz-tooltip nzTooltipTitle="Tin nhắn mới" nzTooltipMouseEnterDelay="2"
+                (click)="toggleModalCreateGroup()">
+          <i nz-icon nzType="form" nzTheme="outline" class="text-xl"></i>
+        </button>
+      </nz-col>
+    </nz-row>
+  </nz-col>
+
+  <nz-col nzSpan="24">
+    <form nz-form autocomplete="off">
+      <nz-input-group [nzSuffix]="suffixIconSearch" nzSize="default">
+        <input type="text" name="keyword"
+               nz-input
+               placeholder="Nhập tên nhóm cần tìm ..."
+               [(ngModel)]="keyword"
+               (ngModelChange)="onSearch($event)"/>
+      </nz-input-group>
+
+      <ng-template #suffixIconSearch>
+        <i nz-icon nzType="search"></i>
+      </ng-template>
+    </form>
+  </nz-col>
+
+  <nz-col nzSpan="24" class="mt-2">
+    <cdk-virtual-scroll-viewport itemSize="10" class="list-group overflow-y-auto overflow-x-hidden px-3">
+      <nz-list nzItemLayout="horizontal" [nzSplit]="false"
+               class="h-full overflow-y-auto overflow-x-hidden"
+               [nzLoading]="groupDataSource?.loading | async">
+        <nz-list-item *cdkVirtualFor="let group of groupDataSource"
+                      class="px-3 rounded-xl cursor-pointer hover:bg-gray-200 mb-0.5"
+                      [ngClass]="{'bg-gray-200': currentGroupId === group?.id}"
+                      [routerLink]="['/messages', group?.id]"
+                      (click)="onSelectGroup(group)">
+          <nz-list-item-meta *ngIf="group"
+                             class="flex items-center">
+            <nz-list-item-meta-title>
+              <span class="text-md font-medium">{{ group?.nameGroup }}</span>
+            </nz-list-item-meta-title>
+
+            <nz-list-item-meta-description>
+              <ng-container *ngIf="group?.lastMessage">
+                <p class="text-sm truncate">{{group?.lastMessage | message: 'lastMessage'}}</p>
+              </ng-container>
+            </nz-list-item-meta-description>
+
+            <nz-list-item-meta-avatar>
+              <nz-badge [nzCount]="group.isGroup && group?.isPrivate ? privateGroupIconTpl : null">
+                <nz-avatar [nzSrc]="group?.thumbnail"
+                           [nzSize]="38"
+                           [nzText]="group?.nameGroup?.charAt(0)?.toUpperCase()"
+                           [ngStyle]="{'background-color': group?.color}">
+                </nz-avatar>
+              </nz-badge>
+
+              <ng-template #privateGroupIconTpl>
+                <i nz-icon nzType="lock" nzTheme="fill"
+                   class="ant-scroll-number-custom-component"
+                   nz-tooltip nzTooltipTitle="Nhóm bí mật" nzTooltipMouseEnterDelay="2">
+                </i>
+              </ng-template>
+            </nz-list-item-meta-avatar>
+          </nz-list-item-meta>
+
+          <ng-container *ngIf="group?.totalNewMessage > 0">
+            <ul nz-list-item-actions>
+              <nz-list-item-action>
+                <nz-badge nzStatus="processing"></nz-badge>
+              </nz-list-item-action>
+            </ul>
+          </ng-container>
+        </nz-list-item>
+
+        <nz-list-empty *ngIf="groupDataSource?.cachedData?.length === 0"></nz-list-empty>
+      </nz-list>
+    </cdk-virtual-scroll-viewport>
+  </nz-col>
+</nz-row>
+
+<nz-modal [nzVisible]="visibleModalCreateGroup | async"
+          nzTitle="Tin nhắn mới"
+          nzCentered nzAutofocus="ok"
+          nzWidth="40vw"
+          [nzClosable]="false"
+          [nzMaskClosable]="false"
+          nzOkText="Nhắn tin"
+          nzCancelText="Huỷ"
+          (nzOnCancel)="toggleModalCreateGroup()"
+          (nzOnOk)="onCreateGroup()">
+  <ng-container *nzModalContent>
+    <app-message-create-page #messageCreatePageComponent
+                             [currentUser]="currentUser">
+    </app-message-create-page>
+  </ng-container>
+</nz-modal>

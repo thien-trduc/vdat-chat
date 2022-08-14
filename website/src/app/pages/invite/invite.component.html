@@ -1,0 +1,21 @@
+<nz-result [nzTitle]="'Lời mời tham gia nhóm'"
+           nzStatus="info"
+           nzSubTitle="Vui lòng xác nhận tham gia nhóm !">
+  <div nz-result-content class="w-full md:w-1/2 mx-auto">
+    <ng-container *ngIf="!requestDto">
+      <div class="desc">
+        <p class="text-center py-6" nz-paragraph>
+          Bạn nhận được 1 lời mời tham gia nhóm
+          <span class="font-bold">{{invite?.groupName}}</span>
+          từ bác sĩ
+          <span class="font-bold">{{invite?.userInviteFullName}}</span>.
+        </p>
+
+        <div class="text-center space-x-5">
+          <button nz-button nzType="default" routerLink="/messages">Không tham gia</button>
+          <button nz-button nzType="primary" (click)="onConfirm()">Tham gia</button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</nz-result>

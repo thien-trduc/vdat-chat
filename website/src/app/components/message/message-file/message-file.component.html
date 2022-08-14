@@ -1,0 +1,11 @@
+<ng-container *ngIf="message">
+  <div class="flex items-center">
+    <i nz-icon [nzType]="(message?.message | fileInfo: 'iconFile') | async | nzSafeNull: 'file'"
+       nzTheme="outline" class="text-3xl"></i>
+    <p class="inline-block truncate px-1.5"
+       nz-tooltip [nzTooltipTitle]="message?.message | fileInfo:'fileName'"
+       nzTooltipPlacement="top" nzTooltipMouseEnterDelay="1">
+      {{message?.message | fileInfo:'fileName'}}
+    </p>
+  </div>
+</ng-container>

@@ -1,0 +1,24 @@
+<nz-list nzItemLayout="vertical" [nzSplit]="false"
+         class="h-full overflow-y-auto overflow-x-hidden"
+         [nzLoading]="loading | async">
+  <nz-list-item *ngFor="let file of listFile">
+    <div class="flex items-center w-full">
+      <i nz-icon [nzType]="(file?.nameFile | fileInfo: 'iconFile') | async | nzSafeNull: 'file'"
+         nzTheme="outline" class="text-xl flex-none"></i>
+
+      <p class="inline-block truncate px-1.5 flex-grow"
+         nz-tooltip [nzTooltipTitle]="file?.nameFile | fileInfo: 'fileName'"
+         nzTooltipPlacement="top" nzTooltipMouseEnterDelay="1">
+        {{file?.nameFile | fileInfo: 'fileName'}}
+      </p>
+
+      <a href="javascript:void(0)" class="flex-none text-xl"
+         (click)="onDownloadFile(file)">
+        <i nz-icon [nzType]="(loading | async) ? 'loading' : 'download'" nzTheme="outline"></i>
+      </a>
+    </div>
+  </nz-list-item>
+
+  <nz-list-empty *ngIf="listFile.length === 0"></nz-list-empty>
+</nz-list>
+

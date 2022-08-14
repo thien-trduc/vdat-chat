@@ -1,0 +1,8 @@
+export enum MessageRequestType {
+  SUBSCRIBE = 1,
+  LOAD_OLD_MESSAGE = 2,
+  SEND_MESSAGE = 3,
+  UPDATE_MESSAGE = 4,
+  DELETE_MESSAGE = 5,
+  LOAD_CHILD_MESSAGE = 6
+}

@@ -1,0 +1,20 @@
+{
+  "/api/v1": {
+    "target": "https://vdat-mcsvc-chat-staging.vdatlab.com",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "timeout": 360000
+  },
+  "/ws": {
+    "target": "wss://vdat-mcsvc-chat-staging.vdatlab.com",
+    "secure": false,
+    "ws": true,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "timeout": 360000,
+    "pathRewrite": {
+      "^/ws": "/message"
+    }
+  }
+}

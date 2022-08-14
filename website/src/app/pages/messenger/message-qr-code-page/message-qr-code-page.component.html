@@ -1,0 +1,23 @@
+<ng-container *ngIf="currentGroup && generateQRCode">
+  <div class="w-full text-center">
+    <h2 class="text-xl text-medium mb-3">Mời người khác tham gia vào nhóm</h2>
+    <p class="text-md">Bất cứ ai có đường link này đều có thể tham gia vào nhóm</p>
+    <p class="font-bold">Chỉ chia sẻ với người mà bạn tin tưởng.</p>
+
+    <div class="mt-8">
+      <p class="p-3 border rounded text-left"
+         nz-typography nzCopyable nzEllipsis
+         [nzContent]="linkInvite"></p>
+    </div>
+
+    <p class="my-4">hoặc dùng mã QR sau</p>
+
+    <img [src]="generateQRCode" alt="QR Code" class="qr-code block mx-auto"/>
+
+<!--    <button nz-button nzType="default" class="rounded flex items-center mx-auto mt-2"-->
+<!--            (click)="downloadQrCode()">-->
+<!--      <i nz-icon nzType="download" nzTheme="outline"></i>-->
+<!--      <span>Tải xuống</span>-->
+<!--    </button>-->
+  </div>
+</ng-container>

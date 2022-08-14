@@ -1,0 +1,5 @@
+<ng-container *ngIf="message">
+  <p [ngClass]="{'truncate': singleLine, 'break-all': !singleLine}">
+    {{message}}
+  </p>
+</ng-container>

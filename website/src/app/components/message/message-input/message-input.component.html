@@ -1,0 +1,81 @@
+<ng-container>
+  <div class="w-full">
+    <nz-row>
+      <nz-col nzSpan="24" class="mb-0.5 px-2.5">
+        <nz-space nzDirection="horizontal" nzSize="middle">
+          <nz-space-item>
+            <nz-upload class="avatar-uploader"
+                       [nzAction]="apiEndpoint"
+                       nzLimit="1"
+                       nzName="file"
+                       nzAccept="image/png, image/gif, image/jpeg"
+                       [nzCustomRequest]="uploadImage"
+                       [nzShowUploadList]="false"
+                       [nzPreview]="handlePreviewImage">
+              <i nz-icon nzType="picture" nzTheme="outline" style="font-size: 1.3rem"></i>
+            </nz-upload>
+          </nz-space-item>
+
+          <nz-space-item>
+            <nz-upload class="avatar-uploader"
+                       [nzAction]="apiEndpoint"
+                       nzLimit="1"
+                       nzName="file"
+                       [nzCustomRequest]="uploadFile"
+                       [nzShowUploadList]="false">
+              <i nz-icon nzType="paper-clip" nzTheme="outline" style="font-size: 1.3rem"></i>
+            </nz-upload>
+          </nz-space-item>
+
+          <nz-space-item>
+            <a nz-popover nzPopoverTrigger="click"
+               nzPopoverPlacement="topLeft"
+               [nzPopoverVisible]="visibleEmojiPicker | async"
+               (nzPopoverVisibleChange)="visibleEmojiPicker.next($event)"
+               [nzPopoverContent]="emojiPickerTpl">
+              <i nz-icon nzType="smile" nzTheme="outline" style="font-size: 1.3rem"></i>
+
+              <ng-template #emojiPickerTpl>
+                <emoji-mart set="facebook"
+                            [darkMode]="false"
+                            [showPreview]="false"
+                            (emojiSelect)="onSelectEmoji($event)">
+                </emoji-mart>
+              </ng-template>
+            </a>
+          </nz-space-item>
+        </nz-space>
+      </nz-col>
+
+      <nz-col nzSpan="24">
+        <form nz-form [formGroup]="formMessage" autocomplete="off" class="w-full">
+          <nz-input-group [nzSuffix]="suffixIconTpl" nzSize="large"
+                          class="border-gray-200 hover:border-gray-200 rounded">
+              <textarea nz-input placeholder="Nhập tin nhắn ..."
+                        [nzAutosize]="{ minRows: 1, maxRows: 4 }"
+                        formControlName="message" nzBorderless
+                        class="hover:border-0 resize-none py-0.5"
+                        (keydown.enter)="onSendMessage($event)">
+              </textarea>
+          </nz-input-group>
+
+          <ng-template #suffixIconTpl>
+            <i nz-icon nzType="send"
+               nz-tooltip nzTooltipTitle="Gửi" nzTooltipMouseEnterDelay="2"
+               (click)="onSendMessage()"
+               class="cursor-pointer"></i>
+          </ng-template>
+        </form>
+      </nz-col>
+    </nz-row>
+  </div>
+
+  <nz-modal [nzVisible]="previewVisible | async"
+            [nzContent]="modalContent"
+            [nzFooter]="null"
+            (nzOnCancel)="previewVisible.next(false)">
+    <ng-template #modalContent>
+      <img alt="preview" [src]="previewImage" [ngStyle]="{ width: '100%' }"/>
+    </ng-template>
+  </nz-modal>
+</ng-container>

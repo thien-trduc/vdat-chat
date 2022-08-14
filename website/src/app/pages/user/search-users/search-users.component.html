@@ -1,0 +1,69 @@
+<nz-row nzJustify="end">
+  <nz-col nzSpan="24" class="mb-2">
+    <form nz-form nzLayout="horizontal" autocomplete="off">
+      <div class="full-width max-h-28 overflow-y-auto overflow-x-hidden border border-gray-200 px-1 py-1 rounded-md">
+        <nz-tag class="rounded-2xl py-1 pl-1 mb-1"
+                *ngFor="let user of userDataSource?.selecteds">
+          <div class="flex items-center">
+            <nz-avatar [nzSrc]="user?.data?.avatar"
+                       [nzSize]="24"
+                       [nzText]="user?.data | userInfo:'firstCharName'"
+                       [ngStyle]="{'background-color': user?.data | userInfo:'color'}"
+                       (click)="onToggleSelectUser(user)">
+            </nz-avatar>
+
+            <span class="px-1">{{user?.data | userInfo:'fullname'}}</span>
+
+            <ng-container *ngIf="currentUser?.userId !== user?.data?.userId">
+              <a href="javascript:void(0)" nz-typography nzType="danger"
+                 (click)="onToggleSelectUser(user)">
+                <i nz-icon nzType="close" nzTheme="outline" class="align-middle"></i>
+              </a>
+            </ng-container>
+          </div>
+        </nz-tag>
+
+        <input #searchInputElement type="text"
+               nz-input
+               class="inline-block border-0 h-8 focus:ring-0 py-1"
+               [ngClass]="{'w-min': userDataSource?.selecteds?.length > 0, 'full-width': userDataSource?.selecteds?.length === 0}"
+               name="keyword"
+               [(ngModel)]="keyword"
+               (ngModelChange)="onSearchUsers($event)"
+               [placeholder]="userDataSource?.selecteds?.length <= 0 ? 'Nhập tên người dùng cần tìm ...' : ''"/>
+      </div>
+    </form>
+  </nz-col>
+
+  <nz-col nzSpan="24">
+    <cdk-virtual-scroll-viewport itemSize="10" class="h-80 overflow-y-auto overflow-x-hidden px-3">
+      <nz-list [nzLoading]="userDataSource?.loading | async">
+        <nz-list-item *cdkVirtualFor="let user of userDataSource">
+          <nz-list-item-meta *ngIf="user.data"
+                             class="flex items-center">
+            <nz-list-item-meta-title>
+              <p class="text-md font-medium">{{user?.data | userInfo:'fullname'}}</p>
+            </nz-list-item-meta-title>
+
+            <nz-list-item-meta-description>
+              <span class="text-xs italic">{{user?.data | userInfo: 'username'}}</span>
+            </nz-list-item-meta-description>
+
+            <nz-list-item-meta-avatar>
+              <label nz-checkbox [nzChecked]="user?.checked"
+                     (nzCheckedChange)="onToggleSelectUser(user)">
+                <nz-avatar [nzSrc]="user?.data?.avatar"
+                           [nzSize]="40"
+                           [nzText]="user?.data | userInfo:'firstCharName'"
+                           [ngStyle]="{'background-color': user?.data | userInfo:'color'}">
+                </nz-avatar>
+              </label>
+            </nz-list-item-meta-avatar>
+          </nz-list-item-meta>
+        </nz-list-item>
+
+        <nz-list-empty *ngIf="userDataSource?.cachedData?.length === 0"></nz-list-empty>
+      </nz-list>
+    </cdk-virtual-scroll-viewport>
+  </nz-col>
+</nz-row>

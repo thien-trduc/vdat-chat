@@ -1,0 +1,37 @@
+<nz-row nzAlign="middle">
+  <nz-col nzSpan="24">
+    <h2 class="text-xl font-medium mb-8">Thông tin người dùng</h2>
+  </nz-col>
+
+  <nz-col nzSpan="24" class="text-center">
+    <nz-badge [nzCount]="editAvatarTpl">
+      <nz-avatar [nzSize]="128"
+                 [nzText]="currentUser?.firstName?.charAt(0)"
+                 [nzSrc]="currentUser?.avatar"
+                 style="color:#f56a00; background-color:#fde3cf;">
+      </nz-avatar>
+
+      <ng-template #editAvatarTpl>
+        <nz-upload class="avatar-uploader"
+                   [nzAction]="apiEndpoint"
+                   nzLimit="1"
+                   nzName="file"
+                   nzAccept="image/png, image/gif, image/jpeg"
+                   [nzCustomRequest]="uploadAvatar"
+                   [nzShowUploadList]="false">
+          <i nz-icon nzType="edit" nzTheme="outline"
+             class="ant-scroll-number-custom-component cursor-pointer"
+             nz-tooltip nzTooltipTitle="Cập nhật" nzTooltipTrigger="hover">
+          </i>
+        </nz-upload>
+
+
+      </ng-template>
+    </nz-badge>
+
+    <h3 class="mt-4 font-bold text-xl">{{currentUser?.fullName}}</h3>
+  </nz-col>
+
+  <nz-col nzSpan="24" class="text-left">
+  </nz-col>
+</nz-row>

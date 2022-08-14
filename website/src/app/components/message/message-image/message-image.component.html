@@ -1,0 +1,22 @@
+<ng-container *ngIf="message">
+  <ng-container *ngIf="isPreviewParentMessage">
+    <div class="flex items-center">
+      <p class="inline-block">
+        {{message?.isOwner ? 'Bạn' : message?.sender?.fullName}}
+        đã gửi 1 hình ảnh
+      </p>
+
+      <a nz-tooltip nzTooltipTitle="Xem hình ảnh" class="inline-flex"
+         (click)="onPreviewImage()">
+        <i nz-icon nzType="eye" nzTheme="outline" class="px-1 text-blue-500"></i>
+      </a>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="!isPreviewParentMessage">
+    <img nz-image
+         class="full-width rounded-t-md message-image"
+         [nzSrc]="(message | message: 'imageUrl' : null : currentGroup) | async"
+         alt="hình ảnh"/>
+  </ng-container>
+</ng-container>

@@ -1,0 +1,18 @@
+<ng-container *ngIf="apiEndpoint">
+  <nz-upload class="avatar-uploader"
+             [nzAction]="apiEndpoint"
+             nzLimit="1"
+             nzName="file"
+             nzListType="picture-card"
+             nzAccept="image/png, image/gif, image/jpeg"
+             [nzCustomRequest]="uploadImage"
+             [nzShowUploadList]="false"
+             [nzTransformFile]="transformFile"
+             (nzChange)="handleChange($event)">
+    <ng-container *ngIf="!thumbnailUrl">
+      <i class="upload-icon" nz-icon [nzType]="(loading | async) ? 'loading' : 'plus'"></i>
+    </ng-container>
+
+    <img *ngIf="thumbnailUrl" [src]="thumbnailUrl" style="width: 100%"/>
+  </nz-upload>
+</ng-container>

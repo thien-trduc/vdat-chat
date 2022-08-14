@@ -1,0 +1,112 @@
+<nz-spin nzTip="Đang kết nối ..." nzSize="large" [nzSpinning]="loading">
+  <nz-layout class="w-screen h-screen">
+    <nz-header class="bg-white border-b">
+      <ng-container *ngTemplateOutlet="headerTpl"></ng-container>
+    </nz-header>
+
+    <nz-layout>
+      <nz-sider nzTheme="light" class="border-r px-2.5 pb-0 pt-2"
+                nz-resizable
+                [nzWidth]="widthSiderRight"
+                [nzMinWidth]="widthSiderRight" [nzMaxWidth]="300"
+                (nzResize)="onSideResize($event, true)">
+        <app-message-list-page #messageListPageComponent
+                               [currentGroupId]="currentGroupId"
+                               (currentGroupChange)="onCurrentGroupChange($event)">
+                               (currentGroupChange)="onCurrentGroupChange($event)">
+        </app-message-list-page>
+      </nz-sider>
+
+      <ng-container *ngIf="!!currentGroup && !currentGroup?.isMember">
+        <div class="w-full h-full">
+          <nz-result nzStatus="403" nzTitle="Bạn chưa là thành viên của nhóm này">
+            <div nz-result-extra>
+              <button nz-button nzType="primary" (click)="onRequestJoin()">Tham gia ngay</button>
+            </div>
+          </nz-result>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="!!currentGroup && currentGroup?.isMember">
+        <nz-content class="bg-white">
+          <ng-container *ngIf="!!!currentGroup">
+            <app-message-empty-page></app-message-empty-page>
+          </ng-container>
+
+          <ng-container *ngIf="!!currentGroup && currentGroup?.isMember">
+            <app-message-content-page [currentUser]="currentUser"
+                                      [currentGroup]="currentGroup"
+                                      (collapseInfoTab)="collapseInfoTab = !collapseInfoTab">
+            </app-message-content-page>
+          </ng-container>
+        </nz-content>
+
+        <nz-sider nzTheme="light" class="border-l pb-0 pt-2"
+                  *ngIf="collapseInfoTab"
+                  nz-resizable
+                  [nzWidth]="widthSiderLeft"
+                  [nzMinWidth]="widthSiderLeft" [nzMaxWidth]="300"
+                  (nzResize)="onSideResize($event, false)">
+          <app-message-info-page [currentGroup]="currentGroup"
+                                 (deleteGroupEvent)="onDeleteGroupEvent($event)"
+                                 (addGroupEvent)="onAddGroupEvent($event)"
+                                 (editGroupEvent)="onEditGroupEvent($event)">
+          </app-message-info-page>
+        </nz-sider>
+      </ng-container>
+    </nz-layout>
+  </nz-layout>
+</nz-spin>
+
+
+<nz-modal [(nzVisible)]="isModalUserInfoVisible" [nzClosable]="false">
+  <ng-container *nzModalContent>
+    <app-user-info [(currentUser)]="currentUser"></app-user-info>
+  </ng-container>
+
+  <ng-container *nzModalFooter>
+    <button nz-button nzType="default" (click)="onCloseModalUserInfo()">Đóng</button>
+  </ng-container>
+</nz-modal>
+
+<ng-template #headerTpl>
+  <nz-row>
+    <nz-col nzSpan="12">
+      <h2>VDAT Messenger</h2>
+    </nz-col>
+
+    <nz-col nzSpan="12" class="text-right">
+        <span class="pt-1 px-3">{{'hello' | translate}}
+          <strong>{{currentUser?.firstName}}</strong>
+          !
+        </span>
+
+      <a nz-dropdown nzTrigger="click"
+         [nzDropdownMenu]="userMenu">
+        <nz-avatar [nzText]="currentUser?.firstName?.charAt(0)"
+                   [nzSrc]="currentUser?.avatar"
+                   style="color:#f56a00; background-color:#fde3cf;"></nz-avatar>
+      </a>
+
+      <nz-dropdown-menu #userMenu="nzDropdownMenu">
+        <ul nz-menu>
+          <li nz-menu-item (click)="onOpenModalUserInfo()">
+            <i nz-icon nzType="user" nzTheme="outline"></i>
+            {{'user_info' | translate}}
+          </li>
+          <li nz-menu-item>
+            <i nz-icon nzType="setting" nzTheme="outline"></i>
+            {{'setting' | translate}}
+          </li>
+          <li nz-menu-divider></li>
+          <li nz-menu-item (click)="onLogout()">
+            <p nz-typography nzType="danger">
+              <i nz-icon nzType="logout" nzTheme="outline"></i>
+              {{'logout' | translate}}
+            </p>
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+    </nz-col>
+  </nz-row>
+</ng-template>

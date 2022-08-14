@@ -1,0 +1,32 @@
+// region Tailwind CSS
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+// endregion
+
+// region Scrollbar
+*::-webkit-scrollbar-track {
+  background: none;
+}
+
+*::-webkit-scrollbar {
+  width: .5em;
+  height: .5em;
+  position: absolute;
+  right: 0;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 6px;
+  background-color: rgba(0,0,0,.2);
+}
+// endregion
+
+.ant-result-icon > * > svg {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ant-image-preview-img {
+  display: inline-block;
+}

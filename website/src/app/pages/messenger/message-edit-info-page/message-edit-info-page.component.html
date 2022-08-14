@@ -1,0 +1,52 @@
+<ng-container *ngIf="!!currentGroup">
+  <nz-row>
+    <nz-col nzSpan="24">
+      <h2 class="text-xl font-medium pb-3">Cập nhật thông tin nhóm</h2>
+    </nz-col>
+
+    <nz-col nzXs="24" nzSm="24" nzMd="8" nzLg="7" nzXl="7" nzXXl="7" class="pt-4">
+      <app-upload-image #uploadImageComponent
+                        [apiEndpoint]="uploadApiEndpoint"
+                        [oldImage]="currentGroup?.thumbnail"
+                        (fileName)="nameFileUploaded = $event">
+      </app-upload-image>
+    </nz-col>
+
+    <nz-col nzXs="24" nzSm="24" nzMd="16" nzLg="17" nzXl="17" nzXXl="17">
+      <form nz-form nzLayout="vertical"
+            [formGroup]="formGroup" autocomplete="off">
+        <nz-form-item>
+          <nz-form-label nzFor="nameGroup">Tên nhóm</nz-form-label>
+          <nz-form-control nzErrorTip="Vui lòng nhập tên nhóm !">
+            <nz-input-group>
+              <input nz-input type="text" formControlName="nameGroup" id="nameGroup" placeholder="Tên nhóm"/>
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzFor="description">Mô tả</nz-form-label>
+          <nz-form-control>
+            <nz-input-group>
+          <textarea nz-input rows="2" placeholder="Mô tả nhóm"
+                    formControlName="description" id="description">
+          </textarea>
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item *ngIf="currentGroup?.isGroup">
+          <label nz-checkbox formControlName="private">
+            <span>Cho phép người lạ tham gia vào nhóm</span>
+          </label>
+        </nz-form-item>
+      </form>
+    </nz-col>
+
+    <nz-col nzSpan="24" *ngIf="currentGroup?.createdAt">
+      <small class="font-light">
+        Nhóm đã được tạo {{currentGroup?.createdAt | datetimeFormat: 'relativeTime'}}.
+      </small>
+    </nz-col>
+  </nz-row>
+</ng-container>

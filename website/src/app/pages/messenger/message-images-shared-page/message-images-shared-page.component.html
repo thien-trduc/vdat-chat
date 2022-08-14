@@ -1,0 +1,23 @@
+<ng-container *ngIf="imagesDataSource">
+  <cdk-virtual-scroll-viewport itemSize="10"
+                               class="h-full w-full overflow-y-auto overflow-x-hidden px-3">
+    <nz-list nzItemLayout="horizontal"
+             class="h-full w-full overflow-y-auto overflow-x-hidden"
+             [nzLoading]="imagesDataSource?.loading | async">
+      <nz-image-group>
+        <div nz-row [nzGutter]="10">
+          <div nz-col nzSpan="8"
+               *cdkVirtualFor="let image of imagesDataSource">
+            <nz-list-item>
+              <img nz-image alt="hình ảnh"
+                   [nzSrc]="image?.fileUrl"
+                   class="inline-block w-full h-full"/>
+            </nz-list-item>
+          </div>
+        </div>
+      </nz-image-group>
+
+      <nz-list-empty *ngIf="imagesDataSource?.cachedData?.length === 0"></nz-list-empty>
+    </nz-list>
+  </cdk-virtual-scroll-viewport>
+</ng-container>

@@ -1,0 +1,139 @@
+<ng-container *ngIf="!!memberDataSource">
+  <nz-row nzJustify="end">
+    <nz-col nzSpan="24" class="flex items-center mb-4">
+      <p class="inline-block text-2xl font-bold pr-2">Danh sách thành viên</p>
+
+      <a class="text-black"
+         nz-tooltip nzTooltipTitle="Làm mới" nzTooltipMouseEnterDelay="2"
+         (click)="memberDataSource?.refreshList()">
+        <i nz-icon nzType="reload" nzTheme="outline"></i>
+      </a>
+    </nz-col>
+
+    <nz-col nzSpan="24" class="mb-2">
+      <nz-space>
+        <nz-space-item>
+          <button nz-button [nzType]="(memberDataSource?.isFilterAll | async) ? 'primary' : 'default'"
+                  class="rounded-2xl"
+                  (click)="memberDataSource?.filterAll()">
+            Tất cả
+          </button>
+        </nz-space-item>
+
+        <nz-space-item>
+          <button nz-button [nzType]="(memberDataSource?.isFilterPatientOnly | async) ? 'primary' : 'default'"
+                  class="rounded-2xl"
+                  (click)="memberDataSource?.filterPatientOnly()">
+            Bệnh nhân
+          </button>
+        </nz-space-item>
+
+        <nz-space-item>
+          <button nz-button [nzType]="(memberDataSource?.isFilterDoctorOnly | async) ? 'primary' : 'default'"
+                  class="rounded-2xl"
+                  (click)="memberDataSource?.filterDoctorOnly()">
+            Bác sĩ
+          </button>
+        </nz-space-item>
+      </nz-space>
+    </nz-col>
+
+    <nz-col nzSpan="24">
+      <cdk-virtual-scroll-viewport itemSize="73" class="h-80 overflow-y-auto overflow-x-hidden px-3">
+        <nz-list [nzLoading]="memberDataSource?.loading | async">
+          <nz-list-item *cdkVirtualFor="let member of memberDataSource">
+            <nz-list-item-meta *ngIf="member"
+                               class="flex items-center">
+              <nz-list-item-meta-title>
+                <p class="text-md font-medium">{{member | userInfo:'fullname'}}</p>
+              </nz-list-item-meta-title>
+
+              <nz-list-item-meta-description>
+                <span class="text-xs italic">{{member | userInfo: 'username'}}</span>
+              </nz-list-item-meta-description>
+
+              <nz-list-item-meta-avatar>
+                <ng-container *ngIf="currentGroup | groupRole:'owner': member">
+                  <nz-badge [nzCount]="iconOwnerTemplate">
+                    <ng-container *ngTemplateOutlet="userAvatar"></ng-container>
+                  </nz-badge>
+                </ng-container>
+
+                <ng-container
+                  *ngIf="(currentGroup | groupRole:'member': member) && !(currentGroup | groupRole:'owner': member)">
+                  <ng-container *ngIf="member | userInfo: 'is-doctor'">
+                    <nz-badge [nzCount]="iconDoctorTemplate">
+                      <ng-container *ngTemplateOutlet="userAvatar"></ng-container>
+                    </nz-badge>
+                  </ng-container>
+
+                  <ng-container *ngIf="!(member | userInfo: 'is-doctor')">
+                    <ng-container *ngTemplateOutlet="userAvatar"></ng-container>
+                  </ng-container>
+                </ng-container>
+
+                <ng-template #userAvatar>
+                  <nz-avatar [nzSrc]="member?.avatar"
+                             [nzSize]="38"
+                             [nzText]="member?.lastName?.charAt(0)?.toUpperCase()"
+                             [ngStyle]="{'background-color': member?.color}">
+                  </nz-avatar>
+                </ng-template>
+
+                <ng-template #iconOwnerTemplate>
+                  <i nz-icon nzType="crown" nzTheme="outline"
+                     class="ant-scroll-number-custom-component text-yellow-600"
+                     nz-tooltip nzTooltipTitle="Trưởng nhóm">
+                  </i>
+                </ng-template>
+
+                <ng-template #iconDoctorTemplate>
+                  <i nz-icon nzType="heart" nzTheme="outline"
+                     class="ant-scroll-number-custom-component text-green-600"
+                     nz-tooltip nzTooltipTitle="Bác sĩ">
+                  </i>
+                </ng-template>
+              </nz-list-item-meta-avatar>
+            </nz-list-item-meta>
+
+            <ul nz-list-item-actions
+                *ngIf="member?.userId !== currentUser?.userId">
+              <nz-list-item-action>
+                <nz-space>
+                  <nz-space-item class="flex items-center"
+                                 *ngIf="member?.userId !== currentUser?.userId">
+                    <button nz-button nzType="link"
+                            nz-tooltip nzTooltipTitle="Nhắn tin"
+                            (click)="onCreateMessage(member?.userId)">
+                      <i nz-icon nzType="message" nzTheme="outline"></i>
+                    </button>
+                  </nz-space-item>
+
+                  <nz-space-item class="flex items-center"
+                                 *ngIf="currentGroup | groupRole:'owner'"
+                                 nz-tooltip nzTooltipTitle="Xoá thành viên">
+                    <button nz-button nzDanger nzType="link"
+                            nz-popconfirm [nzIcon]="iconTpl"
+                            nzPopconfirmTitle="Bạn có chắc muốn xoá thành viên này không ?"
+                            nzOkText="Xoá"
+                            nzOkType="danger"
+                            nzCancelText="Huỷ"
+                            (nzOnConfirm)="onDeleteUser(member?.userId)">
+                      <i nz-icon nzType="delete" nzTheme="outline"></i>
+                    </button>
+
+                    <ng-template #iconTpl>
+                      <i nz-icon nzType="question-circle-o" style="color: red;"></i>
+                    </ng-template>
+                  </nz-space-item>
+                </nz-space>
+              </nz-list-item-action>
+            </ul>
+          </nz-list-item>
+
+          <nz-list-empty *ngIf="memberDataSource?.cachedData?.length === 0"></nz-list-empty>
+        </nz-list>
+      </cdk-virtual-scroll-viewport>
+    </nz-col>
+  </nz-row>
+</ng-container>

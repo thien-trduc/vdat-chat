@@ -1,0 +1,31 @@
+<nz-row>
+  <nz-col nzSpan="24"
+          nz-tooltip
+          nzTooltipTrigger="hover"
+          nzTooltipTitle="Chọn 2 thành viên trở lên để tạo nhóm !"
+          nzTooltipPlacement="rightTop">
+    <form nz-form [formGroup]="formCreateGroup" autocomplete="off">
+      <nz-form-item>
+        <nz-form-control nzErrorTip="Vui lòng nhập tên nhóm" class="rounded-md">
+          <input type="text" nz-input class="border-gray-200 rounded-md"
+                 formControlName="nameGroup"
+                 placeholder="Tên nhóm"/>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <label nz-checkbox
+               formControlName="publicGroup">
+          <span>Cho phép người khác tham gia vào nhóm</span>
+        </label>
+      </nz-form-item>
+    </form>
+  </nz-col>
+
+  <nz-col nzSpan="24">
+    <app-search-users #searchUsersComponent
+                      [addCurrentUser]="true"
+                      (totalSelected)="onUserSelectedChange($event)">
+    </app-search-users>
+  </nz-col>
+</nz-row>
